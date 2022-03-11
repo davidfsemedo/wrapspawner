@@ -325,6 +325,45 @@ class DockerProfilesSpawner(ProfilesSpawner):
         text = ''.join([ self.input_template.format(**tk) for tk in temp_keys ])
         return self.form_template.format(input_template=text)
 
+class DynamicProfilesSpawner(ProfilesSpawner):
+
+    """DynamicProfilesSpawner - Extends ProfilesSpawner class to support dynamic creation of
+    user-driven profiles. Profiles are defined in Jupyter notebook config file through the 
+    variable dyn_profiles. The fifth element of each profile entry is a list of the allowed
+    user groups for the corresponding profile.
+    """
+
+    default_profiles = List(
+        trait = Tuple( Unicode(), Unicode(), Type(Spawner), Dict(), List() ),
+        default_value = [],
+        config = True,
+        help = """List of profiles to offer in addition to docker images for selection. Signature is:
+            List(Tuple( Unicode, Unicode, Type(Spawner), Dict, List() )) corresponding to
+            profile display name, unique key, Spawner class, dictionary of spawner config options, 
+            and list of groups allowed.
+
+            The first three values will be exposed in the input_template as {display}, {key}, and {type}"""
+        )
+
+    dyn_profiles = default_profiles
+    
+    def _dynamic_profiles(self):
+        username = self.user.name
+        import os, grp
+        user_groups = set([g.gr_name for g in grp.getgrall() if username in g.gr_mem])
+        return tuple([ p for p in self.dyn_profiles if len(user_groups.intersection(set(p[4]))) > 0 ])
+
+    @property
+    def profiles(self):
+        return self._dynamic_profiles()
+
+    @property
+    def options_form(self):
+        temp_keys = [ dict(display=p[0], key=p[1], type=p[2], first='') for p in self.profiles]
+        temp_keys[0]['first'] = self.first_template
+        text = ''.join([ self.input_template.format(**tk) for tk in temp_keys ])
+        return self.form_template.format(input_template=text)
+
 
 # vim: set ai expandtab softtabstop=4:
 

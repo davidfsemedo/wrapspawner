@@ -1,3 +1,5 @@
+--- **This fork adds a DynamicProfilesSpawner** to the WrapSpawner---
+
 # wrapspawner for Jupyterhub
 
 This package includes **WrapSpawner** and **ProfilesSpawner**, which provide mechanisms for runtime configuration of spawners. 
@@ -40,6 +42,9 @@ configuration of Spawner classes while permitting:
    * configuration of Spawner classes that don't natively implement `options_form`
    * administrator control of allowed configuration changes
    * runtime choice of which Spawner backend to launch
+
+[`DynamicProfilesSpawner`](https://github.com/jupyterhub/wrapspawner/blob/master/wrapspawner/wrapspawner.py#L328)
+leverages `ProfilesSpawner` "options_form" feature and Property decorators to allow dynamic user-driven configuration of Profiles.
 
 ### Example
 
