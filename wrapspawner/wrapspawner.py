@@ -348,10 +348,17 @@ class DynamicProfilesSpawner(ProfilesSpawner):
     dyn_profiles = default_profiles
     
     def _dynamic_profiles(self):
-        username = self.user.name
         import os, grp
+        username = self.user.name
         user_groups = set([g.gr_name for g in grp.getgrall() if username in g.gr_mem])
-        return tuple([ p for p in self.dyn_profiles if len(user_groups.intersection(set(p[4]))) > 0 ])
+        
+        filtered_profiles = []
+        for p in self.dyn_profiles:
+            p_groups_set = set(p[4])
+            if "<user>" in p_groups_set or len(user_groups.intersection(p_groups_set)) > 0:
+                filtered_profiles += [p]
+
+        return filtered_profiles
 
     @property
     def profiles(self):
